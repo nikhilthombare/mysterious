@@ -1,9 +1,12 @@
+require 'RMagick'
+include Magick
+
 def call_me
     s3_obj = Aws::S3::Client.new(access_key_id: ENV['S3_KEY'],secret_access_key: ENV['S3_SECRET'], region: ENV['S3_REGION'])
     s3 = Aws::S3::Resource.new(access_key_id: ENV['S3_KEY'],secret_access_key: ENV['S3_SECRET'], region: ENV['S3_REGION'])
     bucket = ENV['S3_BUCKET']
     prefix = "#{ENV['S3_PREFIX']}/uploads/primer/primer_image/"
-    
+
     p ENV['S3_KEY']
     p ENV['S3_PREFIX']
     #obj = s3.buckets['development-venturit-in'].objects['Screen_Shot_2018-04-05_at_12.24.06_PM.png'] # no request made
@@ -11,10 +14,10 @@ def call_me
     # s3_obj.put_object(bucket: bucket, key: "#{prefix}/#{id}/#{key}", body: body)
     my_bucket = s3.bucket(bucket).objects(prefix: prefix, delimiter: '').collect(&:key)
     #my_bucket = s3.bucket(bucket).with_prefix(prefix).collect(&:key)
- 
+
     p "===== 3"
     p my_bucket
-    a = []   
+    a = []
     i = 0
     my_bucket.each do |f|
       i = i + 1
@@ -22,7 +25,7 @@ def call_me
 
       if (filename.include? "medium") || (filename.include? "thumb")
       	puts "already found - #{filename}"
-      else 
+      else
         id = f.split('/')[-2]
 
         s3_image_path = "https://s3.us-east-2.amazonaws.com/#{bucket}/#{prefix}#{id}/#{filename}"
@@ -33,16 +36,16 @@ def call_me
         	#s3_obj.copy_object({bucket: bucket , copy_source: "#{copy_source}/#{id}/#{filename}", key: "staging/campusties/uploads/primer/primer_image/#{id}/medium_"+ filename})
 					diff_filesize_name = img_path.split('/')[-1]
 					copy_source = "staging/campusties/uploads/primer/primer_image/#{id}/#{diff_filesize_name}"
-       		
+
        		obj = s3.bucket(bucket).object(copy_source)
 					obj.upload_file(img_path)
-				end           	
+				end
       	a << f
-      end   
+      end
 
       # if i == 7
       #   break
-      # end        
+      # end
 
     end
 		# my_bucket.objects.limit(50).each do |item|
@@ -61,7 +64,7 @@ def call_me
       	idiom: 'thumb',
       	size: 80,
       	scale: 1}]
-			
+
 			img = ImageList.new(s3_image_path)# "https://s3.us-east-2.amazonaws.com/nuteacher/staging/campusties/uploads/primer/primer_image/100/course-art-det-new.png")
       extension = File.extname(img_name)
       file_name_without_ext = File.basename(img_name, extension)
@@ -80,9 +83,9 @@ def call_me
 			  if f[:idiom] == 'medium'
 			  	puts "----medium"
 			    prefix_title = "medium_#{img_name}"
-			  end 
+			  end
 
-			  if f[:idiom].include?('thumb') || f[:idiom].include?('medium') 
+			  if f[:idiom].include?('thumb') || f[:idiom].include?('medium')
 			    #puts Rails.root
 
 			    file_path = "#{Rails.root}/public/uploads/resize_images/"
